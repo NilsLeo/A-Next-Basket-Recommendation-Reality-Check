@@ -80,6 +80,15 @@ We want to analyze the experimental results, basket components and perform user 
 python keyset_fold.py --dataset dunnhumby --fold_id 0
 python keyset_fold.py --dataset dunnhumby --fold_id 1
 python keyset_fold.py --dataset dunnhumby --fold_id 2
+
+python keyset_fold.py --dataset instacart --fold_id 0
+python keyset_fold.py --dataset instacart --fold_id 1
+python keyset_fold.py --dataset instacart --fold_id 2
+
+python keyset_fold.py --dataset tafeng--fold_id 0
+python keyset_fold.py --dataset tafeng --fold_id 1
+python keyset_fold.py --dataset tafeng --fold_id 2
+
 ```
 
 Repeat this process several times, you can get several keyset files under the keyset folder.
@@ -100,7 +109,7 @@ We also provide our additional instructions if the original repository is not cl
 
 Note that, you need to create a "pred" folder under the method folder to store the predicted results.
 
-### G-TopFreq, P-TopFreq, GP-TopFreq
+### 🟢 G-TopFreq, P-TopFreq, GP-TopFreq
 
 Create a specialized virtualenv
 
@@ -164,15 +173,30 @@ python pred_results.py --dataset instacart --fold_id 0
 ```
 Predicted file name: {dataset}_pred{fold_id}.json
 
-### Beacon
+### 🟢 Beacon
+
 Beacon is under the folder "methods/beacon".
+
+Create a specialized virtualenv
+
+```
+cd methods/beacon
+conda create --name venv-beacon python=3.6
+```
+
+To Activate 
+
+```
+conda activate venv-beacon
+pip install -r requirements.txt
+```
+
 * Step 1: Copy dataset to its folder, check the file path of the dataset.
 * Step 2: Generate pre-computed correlation matrix using the following commands:
 ```
 python cmatrix_generator.py --dataset dunnhumby --foldk 0
 python cmatrix_generator.py --dataset tafeng --foldk 0
 python cmatrix_generator.py --dataset instacart --foldk 0
-...
 ```
 * Step 3: Train model using the following commands:
 ```
@@ -194,17 +218,30 @@ python main_gpu.py --dataset instacart --foldk 0 --prediction_mode True --emb_di
 ```
 Predicted file name: {dataset}_pred{foldk}.json
 
-### CLEA
+### 🟠 CLEA
 CLEA is under the folder "methods/clea"
+
+Create a specialized virtualenv
+
+```
+cd methods/clea
+conda create --name venv-clea python=3.6
+```
+
+To Activate 
+
+```
+conda activate venv-clea
+pip install -r requirements.txt
+```
+
 * Step 1: Copy dataset to its folder, check the file path of the dataset.
 * Step 2: Pre-train several epochs using the following commands:
+
 ```
 python new_main.py --dataset dunnhumby --foldk 0 --pretrain_epoch 20 --before_epoch 0 --epoch 10  --embedding_dim 64 --num_product 3920 --num_users 22530
-...
 python new_main.py --dataset tafeng --foldk 0 --pretrain_epoch 20 --before_epoch 0 --epoch 10 --embedding_dim 64 --num_product 11997 --num_users 13858
-...
 python new_main.py --dataset instacart --foldk 0 --pretrain_epoch 20 --before_epoch 0 --epoch 10 --embedding_dim 64 --num_product 13897 --num_users 19435
-...
 ```
 * Step 3: Further train the model and save the model using the following commands.
 ```
@@ -227,19 +264,36 @@ python pred_results.py --dataset instacart --foldk 1 --log_fire cleamodel --alte
 
 Predicted file name: {dataset}_pred{foldk}.json
 
-### Sets2Sets
+### 🟠 Sets2Sets
+
+
 Sets2Sets is under the folder "methods/sets2sets"
+
+```
+cd methods/sets2sets
+conda create --name venv-sets2sets python=3.6.8
+```
+
+To Activate 
+
+```
+conda activate venv-sets2sets
+pip install -r requirements.txt
+```
+
 * Step 1: Copy dataset to its folder or check the file path of the dataset.
 * Step 2: Train and save Sets2Sets model using the following commands:
 ```
 python sets2sets_new.py dunnhumby 0 10 1
-...
+
 python sets2sets_new.py tafeng 1 10 1
-...
+
 python sets2sets_new.py instacart 2 10 1
-...
 ```
+
 * Step 3: Predict and save the results using the following commands:
+
+
 ```
 python sets2sets_new.py dunnhumby 0 10 0
 ...
@@ -250,8 +304,22 @@ python sets2sets_new.py instacart 2 10 0
 ```
 Predicted file name: {dataset}_pred{foldk}.json
 
-### DNNTSP
+### 🟠 DNNTSP
 DNNTSP is under the folder "methods/dnntsp".
+
+```
+cd methods/dnntsp
+conda create --name venv-dnntsp python=3.6.8
+```
+
+To Activate 
+
+```
+conda activate venv-dnntsp
+pip install -r requirements.txt
+```
+
+
 * Step 1: Go to config/parameter file, edit the following values: data, history_path, future_path, keyset_ path, item_embed_dim, items_total ... an example:
 ```
 {
@@ -282,8 +350,21 @@ python pred_results.py --dataset dunnhumby --fold_id 0 --best_mode_path XXX
 Note, DNNTSP will save several models during the training, an epoch model will be saved if it has higher performance than previous epoch, so XXX is the path of the last model saved during the training.
 
 Predicted file name: {dataset}_pred{foldk}.json
-### UP-CF
+### 🟢 UP-CF
 UP-CF is under the folder "methods/upcf".
+
+```
+cd methods/upcf
+conda create --name venv-upcf python=3.8
+```
+
+To Activate 
+
+```
+conda activate venv-upcf
+pip install -r requirements.txt
+```
+
 * Step 1: Copy the dataset to its folder, and check the dataset path and keyset path.
 * Step 2: Predict and save the results using the following commands:
 ```
@@ -296,8 +377,23 @@ python racf.py --dataset instacart --foldk 0 --recency 10 --asymmetry 0.75 --loc
 ``` 
 Predicted file name: {dataset}_pred{foldk}.json
 
-### TIFUKNN
+### 🟢 TIFUKNN
+
 TIFUKNN is under the folder "methods/tifuknn"
+
+
+```
+cd methods/tifuknn
+conda create --name venv-tifuknn python=3.6.8
+```
+
+To Activate 
+
+```
+conda activate venv-tifuknn
+pip install -r requirements.txt
+```
+
 * Step 1: Predict and save the results using the following commands:
 ```
 cd tifuknn
