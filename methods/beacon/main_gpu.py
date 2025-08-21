@@ -76,7 +76,7 @@ dataset = config.dataset
 foldk = config.foldk
 # output_dir = temp_dir + "/adj_matrix"
 
-data_file = f'dataset/{dataset}_merged.json'
+data_file = f'../../mergeddataset/{dataset}_merged.json'
 keyset_path = f'../../keyset/{dataset}_keyset_{foldk}.json'
 
 # data_dir = config.data_dir

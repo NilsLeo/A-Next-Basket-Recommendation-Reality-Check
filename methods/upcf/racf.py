@@ -39,7 +39,7 @@ if __name__ == '__main__':
     print("recency:", recency, '\nasymmetry:', alpha, "\nlocality:", q)
     print('=============')
 
-    data_path = f'dataset/{dataset}_merged.json'
+    data_path = f'../../mergeddataset/{dataset}_merged.json'
     with open(data_path, 'r') as f:
         data = json.load(f)
 

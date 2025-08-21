@@ -73,7 +73,7 @@ class Config(object):
         self.distrisample = args.distrisample
         self.pretrain_epoch = args.pretrain_epoch
         self.MODEL_DIR = f'models/{args.dataset}/'
-        self.input_dir = 'dataset/{}'.format(args.dataset)+'_merged.json'
+        self.input_dir = '../../mergeddataset/{}'.format(args.dataset)+'_merged.json'
         self.keyset_dir = f'../../keyset/{args.dataset}_keyset_{args.foldk}.json'
         self.foldk = args.foldk
         self.dataset = args.dataset

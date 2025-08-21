@@ -5,7 +5,7 @@ import argparse
 import json
 from new_utils import *
 # Model hyper-parameters
-tf.flags.DEFINE_string("data_dir", 'dataset', "The input data directory (default: None)")
+tf.flags.DEFINE_string("data_dir", '../../mergeddataset', "The input data directory (default: None)")
 tf.flags.DEFINE_string("dataset", 'tafeng', "The input data directory (default: None)") # define name here
 tf.flags.DEFINE_string("result_dir", 'temp_result', "The input data directory (default: None)")
 tf.flags.DEFINE_integer("foldk", 0, "The input data directory (default: None)")
