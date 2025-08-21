@@ -61,14 +61,27 @@ user_order = pd.read_csv('../DataSource/ta_feng_all_months_merged.csv', usecols=
 
 > {uid1: [item, item, ..., item], uid2: [item, item, ..., item], ...}
 
+## Creating a general virtual environment
+
+```
+conda create --name venv python=3.9.23
+```
+
+
+```
+conda activate venv
+pip install -r requirements.txt
+```
+
 ## Random split the dataset
 We want to analyze the experimental results, basket components and perform user level analysis. Instead of using random seeds, we use keyset file to store the random split to repeat experiments:
+
 ```
 python keyset_fold.py --dataset dunnhumby --fold_id 0
 python keyset_fold.py --dataset dunnhumby --fold_id 1
 python keyset_fold.py --dataset dunnhumby --fold_id 2
-...
 ```
+
 Repeat this process several times, you can get several keyset files under the keyset folder.
 
 Keyset file name: {dataset}\_keyset_{index}.json
@@ -88,41 +101,66 @@ We also provide our additional instructions if the original repository is not cl
 Note that, you need to create a "pred" folder under the method folder to store the predicted results.
 
 ### G-TopFreq, P-TopFreq, GP-TopFreq
+
+Create a specialized virtualenv
+
+```
+cd methods/g-p-gp-topfreq
+conda create --name venv-dream python=3.9.23
+```
+
+To Activate 
+
+```
+conda activate venv-top-freq
+pip install -r requirements.txt
+```
+
 Three frequency based methods are under the folder "methods/g-p-gp-topfreq".
 * Step 1: Check the file path of the dataset, or put the dataset into corresponding folder.
 * Step 2: Using the following commands to run each method:
+
 ```
 python g_topfreq.py --dataset dunnhumby --fold_id 0
-...
 python p_topfreq.py --dataset dunnhumby --fold_id 0
-...
 python gp_topfreq.py --dataset dunnhumby --fold_id 0
-...
 ```
+
 Predicted files are stored under folder: "g_top_freq", "p_top_freq", "gp_top_freq".
 
 Predicted file name: {dataset}_pred{fold_id}.json
 
 ### Dream
+
+Create a specialized virtualenv
+
+```
+cd methods/dream
+conda create --name venv-dream python=3.6
+```
+
+To Activate 
+
+```
+conda activate venv-dream
+pip install -r requirements.txt
+```
+
 Dream is under the folder "methods/dream".
 * Step 1: Check the file path of the dataset in the config-param file "{dataset}conf.json"
 * Step 2: Train and save the model using the following commands:
+
 ```
 python trainer.py --dataset dunnhumby --fold_id 0 --attention 1
-...
 python trainer.py --dataset tafeng --fold_id 0 --attention 1
-...
 python trainer.py --dataset instacart --fold_id 0 --attention 1
-...
 ```
+
 * Step 3: Predict and save the results using the following commands:
 ```
 python pred_results.py --dataset dunnhumby --fold_id 0
-...
 python pred_results.py --dataset tafeng --fold_id 0
-...
 python pred_results.py --dataset instacart --fold_id 0
-...
 ```
 Predicted file name: {dataset}_pred{fold_id}.json
 
@@ -132,9 +170,7 @@ Beacon is under the folder "methods/beacon".
 * Step 2: Generate pre-computed correlation matrix using the following commands:
 ```
 python cmatrix_generator.py --dataset dunnhumby --foldk 0
-...
 python cmatrix_generator.py --dataset tafeng --foldk 0
-...
 python cmatrix_generator.py --dataset instacart --foldk 0
 ...
 ```
