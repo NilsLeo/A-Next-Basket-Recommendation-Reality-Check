@@ -11,8 +11,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
     dataset = args.dataset
     fold_id = args.fold_id
-    history_file = '../jsondata/'+dataset+'_history.json'
-    future_file = '../jsondata/'+dataset+'_future.json'
+    history_file = '../../jsondata/'+dataset+'_history.json'
+    future_file = '../../jsondata/'+dataset+'_future.json'
     with open(history_file, 'r') as f:
         data_history = json.load(f)
     with open(future_file, 'r') as f:
@@ -23,7 +23,7 @@ if __name__ == '__main__':
         conf['attention'] = mode
         conf['loss_mode'] = 0  # bceloss
         para_path = glob.glob('./models/'+dataset+'/*')
-        keyset_file = '../keyset/'+dataset+'_keyset_'+str(fold_id)+'.json'
+        keyset_file = '../../keyset/'+dataset+'_keyset_'+str(fold_id)+'.json'
         print(keyset_file)
         pred_file = 'pred/'+dataset+'_'+mode+'_pred'+str(fold_id)+'.json'
         with open(keyset_file, 'r') as f:
@@ -35,12 +35,19 @@ if __name__ == '__main__':
         checkpoint_file = []
         for path in para_path:
             path_l = path.split('-')
-            if path_l[3] == mode and path_l[4] == str(fold_id):
+            if path_l[2] == str(fold_id) and path_l[4] == '1':
                 checkpoint_file.append(path)
 
-        model = NBRNet(conf, keyset)
         checkpoint = torch.load(checkpoint_file[0], map_location=torch.device('cpu'))
-        model.load_state_dict(checkpoint['state_dict'])
+        
+        # Determine attention mode based on checkpoint keys
+        if 'decoder.W_repeat.weight' in checkpoint['state_dict']:
+            conf['attention'] = 'attention'
+        else:
+            conf['attention'] = 'no_attention'
+            
+        model = NBRNet(conf, keyset)
+        model.load_state_dict(checkpoint['state_dict'], strict=False)
         message_output = 'Loading model structure and parameters from {}'.format(checkpoint_file)
         print(message_output)
         model.eval()
