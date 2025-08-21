@@ -1,0 +1,8 @@
+methods/dream/__pycache__
+methods/dream/models/dunnhumby/*
+methods/dream/basket_dataloader.ipynb
+**/*.ipynb
+keyset/*
+methods/g-p-gp-topfreq/g_top_pred/*
+methods/g-p-gp-topfreq/gp_top_pred/*
+methods/g-p-gp-topfreq/p_top_pred/*
