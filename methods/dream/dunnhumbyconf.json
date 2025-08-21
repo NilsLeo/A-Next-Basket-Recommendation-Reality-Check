@@ -15,10 +15,10 @@
   "valid_metric_bigger": 1,
   "valid_metric": "recall20",
   "log_file": "logs/dunnhumby/test.log",
-  "train_file": "../jsondata/dunnhumby_history.json",
-  "tgt_file": "../jsondata/dunnhumby_future.json",
-  "data_config_file": "../keyset/dunnhumby_keyset_",
-  "item_candidate": "../datacand/dunnhumby_item",
-  "user_candidate": "../datacand/dunnhumby_user",
+  "train_file": "../../jsondata/dunnhumby_history.json",
+  "tgt_file": "../../jsondata/dunnhumby_future.json",
+  "data_config_file": "../../keyset/dunnhumby_keyset_",
+  "item_candidate": "../../datacand/dunnhumby_item",
+  "user_candidate": "../../datacand/dunnhumby_user",
   "checkpoint_dir": "models/dunnhumby/"
 }
