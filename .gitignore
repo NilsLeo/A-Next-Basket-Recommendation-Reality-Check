@@ -20,4 +20,6 @@ methods/dnntsp/train/__pycache__
 methods/dnntsp/utils/__pycache__
 methods/tifuknn/dunnhumby_pred0.json
 methods/upcf/__pycache__
-methods/upcf/pred
+methods/upcf/pred/*
+methods/dnntsp/save_model_folder/Instacart/DNNTSP/*
+methods/sets2sets/models/*
