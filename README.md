@@ -308,7 +308,7 @@ Predicted file name: {dataset}_pred{foldk}.json
 DNNTSP is under the folder "methods/dnntsp".
 
 ```
-cd methods/dnntsp
+cd methods/dnntsp/train
 conda create --name venv-dnntsp python=3.6.8
 ```
 
