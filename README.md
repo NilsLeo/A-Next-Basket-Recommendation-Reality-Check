@@ -23,7 +23,57 @@ To run the pubished methods' code, you can go to the original repository and che
     * model_performance.py: evaluate the baskets' rep/expl ratio, and the recall, phr performance w.r.t. repetition and exploration.
 * appendix: contains a PDF file with the additional plots.
 
-## Pipeline
+# Edit .env with actual dataset download URLs
+
+## Pipeline Automation
+
+### Quick Start
+1. **Setup environment**:
+```bash
+conda create --name venv python=3.9.23
+conda activate venv
+pip install -r requirements.txt
+cd pipeline
+cp .env.example .env
+```
+
+
+2. **Run complete pipeline**:
+   ```bash
+   ./run_full_pipeline.sh
+   ```
+
+### Manual Step-by-Step Execution
+
+**Data Preparation:**
+```bash
+cd pipeline
+./download_data.sh     # Download datasets
+./preprocess_data.sh   # Preprocess datasets  
+./keyset.sh           # Generate train/test splits
+./csv_to_json.sh      # Convert to JSON format
+./csv_to_mergedjson.sh # Convert to merged JSON
+```
+
+**Model Training (can run in parallel):**
+```bash
+./topfreq.sh      # G-TopFreq, P-TopFreq, GP-TopFreq
+./dream.sh        # DREAM
+./beacon.sh       # BEACON  
+./clea.sh         # CLEA
+./sets2sets.sh    # Sets2Sets
+./dnntsp.sh       # DNNTSP (requires manual config)
+./upcf.sh         # UP-CF
+./tifuknn.sh      # TIFUKNN
+```
+
+**Evaluation:**
+```bash
+./performance.sh       # Model performance metrics
+./performance_gain.sh  # Performance gain analysis
+```
+
+## Manual Pipeline Steps
 * Step 1. Select the different types of preprossed datasets according to different methods. (Edit the entry or put datasets at the corresponding folder.)
 * Step 2. Train the model and save the model. (Note that we use the original implementations of the authors, so we provide the original repository links, which contain the instructions of the environment setting, how to run each method, etc. We also provide our additional instructions in the following section, which can make the running easier.)
 * Step 3. Generate the predicted results via the trained model and save the results file.
@@ -63,15 +113,7 @@ user_order = pd.read_csv('../DataSource/ta_feng_all_months_merged.csv', usecols=
 
 ## Creating a general virtual environment
 
-```
-conda create --name venv python=3.9.23
-```
 
-
-```
-conda activate venv
-pip install -r requirements.txt
-```
 
 ## Random split the dataset
 We want to analyze the experimental results, basket components and perform user level analysis. Instead of using random seeds, we use keyset file to store the random split to repeat experiments:
@@ -110,6 +152,7 @@ We also provide our additional instructions if the original repository is not cl
 Note that, you need to create a "pred" folder under the method folder to store the predicted results.
 
 ### 🟢 G-TopFreq, P-TopFreq, GP-TopFreq
+- These methods use the dataset/*.csv files
 
 Create a specialized virtualenv
 
@@ -140,6 +183,7 @@ Predicted files are stored under folder: "g_top_freq", "p_top_freq", "gp_top_fre
 Predicted file name: {dataset}_pred{fold_id}.json
 
 ### Dream
+- This method uses the jsondata/*.json files
 
 Create a specialized virtualenv
 
@@ -174,6 +218,7 @@ python pred_results.py --dataset instacart --fold_id 0
 Predicted file name: {dataset}_pred{fold_id}.json
 
 ### 🟢 Beacon
+- This method uses the mergeddataset/*.json files
 
 Beacon is under the folder "methods/beacon".
 
@@ -219,6 +264,8 @@ python main_gpu.py --dataset instacart --foldk 0 --prediction_mode True --emb_di
 Predicted file name: {dataset}_pred{foldk}.json
 
 ### 🟠 CLEA
+- This method uses the mergeddataset/*.json files
+
 CLEA is under the folder "methods/clea"
 
 Create a specialized virtualenv
@@ -265,7 +312,7 @@ python pred_results.py --dataset instacart --foldk 1 --log_fire cleamodel --alte
 Predicted file name: {dataset}_pred{foldk}.json
 
 ### 🟠 Sets2Sets
-
+- This method uses the jsondata/*.json files
 
 Sets2Sets is under the folder "methods/sets2sets"
 
@@ -305,6 +352,8 @@ python sets2sets_new.py instacart 2 10 0
 Predicted file name: {dataset}_pred{foldk}.json
 
 ### 🟠 DNNTSP
+- This method uses the jsondata/*.json files
+
 DNNTSP is under the folder "methods/dnntsp".
 
 ```
@@ -351,6 +400,8 @@ Note, DNNTSP will save several models during the training, an epoch model will b
 
 Predicted file name: {dataset}_pred{foldk}.json
 ### 🟢 UP-CF
+- This method uses the mergeddataset/*.json files
+
 UP-CF is under the folder "methods/upcf".
 
 ```
@@ -378,6 +429,7 @@ python racf.py --dataset instacart --foldk 0 --recency 10 --asymmetry 0.75 --loc
 Predicted file name: {dataset}_pred{foldk}.json
 
 ### 🟢 TIFUKNN
+- This method uses the jsondata/*.json files
 
 TIFUKNN is under the folder "methods/tifuknn"
 
