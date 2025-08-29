@@ -24,3 +24,7 @@ methods/upcf/pred/*
 methods/dnntsp/save_model_folder/Instacart/DNNTSP/*
 methods/sets2sets/models/*
 .env
+DataSource/*
+datasource/*
+Limitations/input
+*.csv
