@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e  # Exit immediately if a command exits with a non-zero status
+
 cd ../methods/clea
 
 echo "Setting up CLEA environment..."
@@ -21,20 +23,44 @@ fi
 
 echo "Running CLEA method..."
 
-# Dataset parameters
-declare -A num_products=( ["dunnhumby"]="3920" ["tafeng"]="11997" ["instacart"]="13897" )
-declare -A num_users=( ["dunnhumby"]="22530" ["tafeng"]="13858" ["instacart"]="19435" )
+# Source environment variables
+source ../../.env
 
-for dataset in dunnhumby tafeng instacart; do
+# Parse dataset names from env variable
+IFS=',' read -ra DATASET_ARRAY <<< "$DATASET_NAMES"
+
+# Create models directory
+mkdir -p models
+
+for dataset in "${DATASET_ARRAY[@]}"; do
+    # Dynamically get user and product counts from the dataset
+    num_users=$(python -c "
+import pandas as pd
+df = pd.read_csv('../../dataset/${dataset}_history.csv')
+print(df['user_id'].nunique())
+")
+    num_products=$(python -c "
+import pandas as pd
+df = pd.read_csv('../../dataset/${dataset}_history.csv')
+print(df['product_id'].max() + 1)
+")
+    
+    # Create dataset-specific model directory
+    mkdir -p models/$dataset
+    
     for foldk in 0 1 2; do
         echo "Pre-training CLEA for $dataset fold $foldk"
-        python new_main.py --dataset $dataset --foldk $foldk --pretrain_epoch 20 --before_epoch 0 --epoch 10 --embedding_dim 64 --num_product ${num_products[$dataset]} --num_users ${num_users[$dataset]}
+        python new_main.py --dataset $dataset --foldk $foldk --num_users $num_users --num_product $num_products --pretrain_epoch 20 --before_epoch 0 --epoch 10 --embedding_dim 64
         
         echo "Training CLEA for $dataset fold $foldk"
-        python new_main.py --dataset $dataset --foldk $foldk --log_fire cleamodel --alternative_train_epoch 10 --alternative_train_epoch_D 10 --pretrain_epoch 2 --before_epoch 2 --epoch 30 --temp_learn 0 --temp 10 --embedding_dim 64 --num_product ${num_products[$dataset]} --num_users ${num_users[$dataset]}
+        python new_main.py --dataset $dataset --foldk $foldk --num_users $num_users --num_product $num_products --log_fire cleamodel --alternative_train_epoch 10 --alternative_train_epoch_D 10 --pretrain_epoch 2 --before_epoch 2 --epoch 30 --temp_learn 0 --temp 10 --embedding_dim 64
         
         echo "Predicting with CLEA for $dataset fold $foldk"
-        python pred_results.py --dataset $dataset --foldk $foldk --log_fire cleamodel --alternative_train_epoch 10 --alternative_train_epoch_D 10 --pretrain_epoch 2 --before_epoch 2 --epoch 30 --temp_learn 0 --temp 10 --embedding_dim 64 --num_product ${num_products[$dataset]} --num_users ${num_users[$dataset]}
+        if [ -f "pred_results.py" ]; then
+            python pred_results.py --dataset $dataset --foldk $foldk --num_users $num_users --num_product $num_products --log_fire cleamodel --alternative_train_epoch 10 --alternative_train_epoch_D 10 --pretrain_epoch 2 --before_epoch 2 --epoch 30 --temp_learn 0 --temp 10 --embedding_dim 64
+        else
+            echo "Warning: pred_results.py not found, skipping prediction step"
+        fi
     done
 done
 

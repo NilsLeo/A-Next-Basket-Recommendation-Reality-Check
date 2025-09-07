@@ -1,4 +1,6 @@
 #!/bin/bash
+set -e  # Exit immediately if a command exits with a non-zero status
+
 
 cd ../methods/g-p-gp-topfreq
 
@@ -19,9 +21,19 @@ if [ -f "requirements.txt" ]; then
     pip install -r requirements.txt
 fi
 
+# Generate popularity files if they don't exist
+echo "Generating popularity files..."
+python generate_popularity.py
+
 echo "Running TopFreq methods..."
 
-for dataset in dunnhumby instacart tafeng; do
+# Source environment variables
+source ../../.env
+
+# Parse dataset names from env variable
+IFS=',' read -ra DATASET_ARRAY <<< "$DATASET_NAMES"
+
+for dataset in "${DATASET_ARRAY[@]}"; do
     for fold_id in 0 1 2; do
         echo "Running G-TopFreq for $dataset fold $fold_id"
         python g_topfreq.py --dataset $dataset --fold_id $fold_id

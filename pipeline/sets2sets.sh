@@ -1,4 +1,6 @@
 #!/bin/bash
+set -e  # Exit immediately if a command exits with a non-zero status
+
 
 cd ../methods/sets2sets
 
@@ -21,9 +23,19 @@ fi
 
 echo "Running Sets2Sets method..."
 
-declare -A dataset_ids=( ["dunnhumby"]="0" ["tafeng"]="1" ["instacart"]="2" )
+# Source environment variables
+source ../../.env
 
-for dataset in dunnhumby tafeng instacart; do
+# Parse dataset names from env variable
+IFS=',' read -ra DATASET_ARRAY <<< "$DATASET_NAMES"
+
+# Dynamically assign dataset IDs based on order in .env
+declare -A dataset_ids
+for i in "${!DATASET_ARRAY[@]}"; do
+    dataset_ids["${DATASET_ARRAY[$i]}"]="$i"
+done
+
+for dataset in "${DATASET_ARRAY[@]}"; do
     dataset_id=${dataset_ids[$dataset]}
     for fold_id in 0 1 2; do
         echo "Training Sets2Sets for $dataset fold $fold_id"

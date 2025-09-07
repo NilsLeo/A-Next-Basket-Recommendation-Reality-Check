@@ -1,4 +1,6 @@
 #!/bin/bash
+set -e  # Exit immediately if a command exits with a non-zero status
+
 
 cd ../methods/beacon
 
@@ -21,7 +23,13 @@ fi
 
 echo "Running BEACON method..."
 
-for dataset in dunnhumby tafeng instacart; do
+# Source environment variables
+source ../../.env
+
+# Parse dataset names from env variable
+IFS=',' read -ra DATASET_ARRAY <<< "$DATASET_NAMES"
+
+for dataset in "${DATASET_ARRAY[@]}"; do
     for foldk in 0 1 2; do
         echo "Generating correlation matrix for $dataset fold $foldk"
         python cmatrix_generator.py --dataset $dataset --foldk $foldk
