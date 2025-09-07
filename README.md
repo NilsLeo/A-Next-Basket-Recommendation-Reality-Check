@@ -59,6 +59,59 @@ In order to generate these files you need to preprocess your dataset. Examples o
 (Optional) If youre looking to sample a smaller version of the dataset, you can use the [NBR-Restrictor](https://github.com/NilsLeo/NBR-Restrictor) repository to generate the required files.
 
 
+## System Requirements
+
+### Hardware Requirements
+- **GPU**: NVIDIA GPU with CUDA support (tested with RTX 4070, compute capability 8.9+)
+- **Memory**: Minimum 16GB RAM, recommended 32GB+ for large datasets  
+- **Storage**: ~50GB free space for models, datasets, and virtual environments
+- **CPU**: Multi-core processor (parallel model execution utilizes all cores)
+
+### Software Requirements
+- **Operating System**: Linux (tested on Ubuntu with kernel 6.14.0)
+- **CUDA**: NVIDIA drivers with CUDA support (tested with driver 570.169, CUDA 12.8)
+- **Python**: Multiple versions managed automatically (3.6, 3.7, 3.8, 3.9 depending on method)
+- **Conda**: [Miniconda3](https://docs.conda.io/en/latest/miniconda.html) or Anaconda
+- **tmux**: Optional but recommended for monitoring multiple models (install: `sudo apt install tmux`)
+
+### GPU Setup (Critical for Performance)
+The pipeline requires proper GPU acceleration for optimal performance:
+
+1. **Install NVIDIA drivers**: Ensure latest drivers are installed and compatible with your kernel
+   ```bash
+   # Install DKMS drivers for kernel compatibility
+   sudo apt update
+   sudo apt install nvidia-dkms-570  # or latest version
+   ```
+
+2. **CUDA libraries**: Different methods require specific CUDA versions (automatically managed):
+   - **DREAM**: CUDA 11.0 (`torch==1.7.1+cu110`) - Fixed from cuDNN compatibility issues
+   - **CLEA**: CUDA 11.0 (`torch==1.7.0+cu110`) 
+   - **DNNTSP**: CUDA 11.1 (`torch==1.10.0+cu111`, `dgl-cu111==0.6.1`) - Requires CUDA toolkit installation
+   - **BEACON**: TensorFlow-GPU 1.14.0
+
+3. **Secure Boot**: If enabled, you may need to enroll MOK keys for NVIDIA modules:
+   ```bash
+   # During driver installation, when prompted:
+   # - Set MOK password (remember this)
+   # - Reboot system  
+   # - At MOK Manager screen, select "Enroll MOK"
+   # - Enter password and reboot
+   ```
+
+4. **CUDA Toolkit Dependencies**: Some methods require additional CUDA libraries:
+   ```bash
+   # For DNNTSP DGL support
+   conda activate venv-dnntsp
+   conda install -c conda-forge cudatoolkit=11.1 -y
+   ```
+
+### Method-Specific Dependencies
+Each method automatically installs its dependencies via conda environments:
+- **Python versions**: 3.6 (DREAM, BEACON, Sets2Sets, TIFUKNN), 3.7 (CLEA), 3.8+ (DNNTSP), 3.9 (TopFreq, UP-CF)
+- **Deep learning frameworks**: PyTorch (various CUDA versions), TensorFlow-GPU 1.14.0
+- **Graph libraries**: DGL, torch-geometric (for DNNTSP)
+
 ### Quick Start
 
 1. **Setup environment**: Install [conda](https://docs.conda.io/en/latest/miniconda.html) and configure datasets in .env
@@ -75,7 +128,149 @@ In order to generate these files you need to preprocess your dataset. Examples o
 
 The pipeline automatically creates and manages virtual environments for each method.
 
-Basic Knowledge of bash scripting and having read the original README is
+## Advanced Usage
+
+### Using tmux for Model Monitoring (Recommended)
+
+For better monitoring and control of individual models, you can run each model in separate tmux windows:
+
+1. **Start tmux session**:
+   ```bash
+   tmux new-session -d -s nbr-models
+   tmux attach-session -t nbr-models
+   ```
+
+2. **Create windows for each model** (from pipeline directory):
+   ```bash
+   # Create individual tmux windows for each model
+   tmux new-window -n "topfreq" && tmux send-keys -t "topfreq" "./topfreq.sh 2>&1 | tee logs/topfreq.log" Enter
+   tmux new-window -n "dream" && tmux send-keys -t "dream" "./dream.sh 2>&1 | tee logs/dream.log" Enter  
+   tmux new-window -n "beacon" && tmux send-keys -t "beacon" "./beacon.sh 2>&1 | tee logs/beacon.log" Enter
+   tmux new-window -n "clea" && tmux send-keys -t "clea" "./clea.sh 2>&1 | tee logs/clea.log" Enter
+   tmux new-window -n "sets2sets" && tmux send-keys -t "sets2sets" "./sets2sets.sh 2>&1 | tee logs/sets2sets.log" Enter
+   tmux new-window -n "dnntsp" && tmux send-keys -t "dnntsp" "./dnntsp.sh 2>&1 | tee logs/dnntsp.log" Enter
+   tmux new-window -n "upcf" && tmux send-keys -t "upcf" "./upcf.sh 2>&1 | tee logs/upcf.log" Enter
+   tmux new-window -n "tifuknn" && tmux send-keys -t "tifuknn" "./tifuknn.sh 2>&1 | tee logs/tifuknn.log" Enter
+   ```
+
+3. **Navigate between models**:
+   - `Ctrl+b` + `0-9`: Switch to window by number
+   - `Ctrl+b` + `n`: Next window  
+   - `Ctrl+b` + `p`: Previous window
+   - `Ctrl+b` + `w`: Window list
+   - `tmux list-windows`: Show all windows
+
+4. **Monitor GPU usage**:
+   ```bash
+   watch -n 1 nvidia-smi
+   ```
+
+5. **Detach and reattach**:
+   - `Ctrl+b` + `d`: Detach from session (keeps running)
+   - `tmux attach-session -t nbr-models`: Reattach later
+
+### Troubleshooting GPU Issues
+
+**Common CUDA/GPU issues and their fixes**:
+
+1. **NVIDIA Driver Issues**:
+   - `NVIDIA-SMI has failed because it couldn't communicate with the NVIDIA driver`
+   - `nvidia kernel module missing. Falling back to nouveau`
+   
+   **Solution**: Install DKMS drivers and enroll MOK keys
+   ```bash
+   sudo apt install nvidia-dkms-570
+   # Follow MOK enrollment process after reboot
+   ```
+
+2. **DREAM cuDNN Errors**:
+   - `RuntimeError: cuDNN error: CUDNN_STATUS_EXECUTION_FAILED`
+   
+   **Solution**: Update PyTorch from 1.4.0+cu100 to 1.7.1+cu110
+   ```bash
+   # In methods/dream/requirements.txt
+   torch==1.7.1+cu110  # instead of torch==1.4.0+cu100
+   ```
+
+3. **DNNTSP DGL CUDA Errors**:
+   - `OSError: libcublas.so.11: cannot open shared object file`
+   - `Device API cuda is not enabled. Please install the cuda version of dgl`
+   
+   **Solution**: Install CUDA toolkit and update DGL version
+   ```bash
+   conda activate venv-dnntsp
+   conda install -c conda-forge cudatoolkit=11.1 -y
+   # Update requirements.txt: dgl-cu111==0.6.1
+   ```
+
+4. **PyTorch CUDA Version Conflicts**:
+   - `The detected CUDA version (X.X) mismatches the version that was used to compile PyTorch`
+   
+   **Solution**: Match PyTorch CUDA version to installed CUDA toolkit
+   ```bash
+   pip install torch==1.10.0+cu111 --extra-index-url https://download.pytorch.org/whl/cu111
+   ```
+
+5. **Secure Boot Blocking NVIDIA Modules**:
+   - `Required key not available` in dmesg
+   - Modules fail to load after driver installation
+   
+   **Solution**: Enroll MOK keys during installation, reboot when prompted
+
+**Verification Commands**:
+```bash
+# Check GPU status
+nvidia-smi
+
+# Test PyTorch CUDA
+python -c "import torch; print(torch.cuda.is_available())"
+
+# Test DGL CUDA (in venv-dnntsp)
+python -c "import dgl; print('DGL CUDA ready')"
+
+# Monitor GPU during training
+watch -n 1 nvidia-smi
+```
+
+### Monitoring and Logging
+
+All model outputs are automatically logged to `pipeline/logs/`:
+- `topfreq.log` - TopFreq variants progress
+- `dream.log` - DREAM training with GPU utilization  
+- `beacon.log` - BEACON correlation matrix and TensorFlow training
+- `clea.log` - CLEA pre-training with validation metrics
+- `sets2sets.log` - Sets2Sets model progress
+- `dnntsp.log` - DNNTSP graph neural network training
+- `upcf.log` - UP-CF collaborative filtering  
+- `tifuknn.log` - TIFUKNN k-nearest neighbor method
+
+**Real-time monitoring commands**:
+```bash
+# Monitor specific model
+tail -f pipeline/logs/dream.log
+
+# Monitor GPU utilization
+watch -n 1 nvidia-smi
+
+# Check all model progress
+ls -la pipeline/logs/*.log | sort -k5 -nr
+```
+
+**Expected training times** (RTX 4070, varies by dataset size):
+- TopFreq, TIFUKNN: ~2-5 minutes (fast)
+- DREAM: ~15-30 minutes per fold (medium, GPU accelerated)  
+- DNNTSP: ~30-60 minutes (medium, GPU accelerated with GCN)
+- CLEA, UP-CF: ~1-2 hours (slow, GPU accelerated)
+- Sets2Sets: ~2-3 hours (slow)
+- BEACON: ~4-6 hours (very slow)
+
+**GPU Memory Usage** (typical with RTX 4070 12GB):
+- DREAM: ~1.6GB VRAM, 85-90s per epoch
+- CLEA: ~3.8GB VRAM, stable training metrics
+- DNNTSP: ~1.0GB VRAM, graph convolution networks
+- Combined parallel: ~5.7GB total usage at 45% GPU utilization
+
+asic Knowledge of bash scripting and having read the original README is
 recommended to understand the pipeline. If you are only interested in running
 the script on your own dataset, you can skip the download and teps. Simply comment out the lines
 
