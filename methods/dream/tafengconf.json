@@ -14,10 +14,10 @@
   "valid_metric_bigger": 1,
   "valid_metric": "recall20",
   "log_file": "logs/tafeng/test.log",
-  "train_file": "../jsondata/tafeng_history.json",
-  "tgt_file": "../jsondata/tafeng_future.json",
-  "data_config_file": "../keyset/tafeng_keyset_",
-  "item_candidate": "../datacand/tafeng_item",
-  "user_candidate": "../datacand/tafeng_user",
+  "train_file": "../../jsondata/tafeng_history.json",
+  "tgt_file": "../../jsondata/tafeng_future.json",
+  "data_config_file": "../../keyset/tafeng_keyset_",
+  "item_candidate": "../../datacand/tafeng_item",
+  "user_candidate": "../../datacand/tafeng_user",
   "checkpoint_dir": "models/tafeng/"
 }

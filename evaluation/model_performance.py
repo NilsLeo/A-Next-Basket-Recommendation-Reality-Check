@@ -3,6 +3,31 @@ import pandas as pd
 import json
 import argparse
 import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv('../.env')
+
+def find_pred_file(pred_folder, dataset, fold):
+    """Find the correct prediction file path based on method structure"""
+    method_name = os.path.basename(pred_folder)
+    
+    # Different methods have different file structures
+    possible_paths = [
+        f'{pred_folder}/{dataset}_pred{fold}.json',  # Direct in method folder (tifuknn)
+        f'{pred_folder}/pred/{dataset}_pred{fold}.json',  # In pred subfolder (upcf, beacon)
+        f'{pred_folder}/results/pred/{dataset}_pred{fold}.json',  # In results/pred subfolder (beacon)
+        f'{pred_folder}/pred/{dataset}_attention_pred{fold}.json',  # Dream with attention suffix
+        f'{pred_folder}/g_top_pred/{dataset}_pred{fold}.json',  # g-p-gp-topfreq variants
+        f'{pred_folder}/p_top_pred/{dataset}_pred{fold}.json',
+        f'{pred_folder}/gp_top_pred/{dataset}_pred{fold}.json',
+    ]
+    
+    for path in possible_paths:
+        if os.path.exists(path):
+            return path
+    
+    raise FileNotFoundError(f"No prediction file found for {method_name}, dataset {dataset}, fold {fold}")
 
 def get_repeat_eval(pred_folder, dataset, size, fold_list, file):
     history_file = f'../dataset/{dataset}_history.csv'
@@ -22,7 +47,7 @@ def get_repeat_eval(pred_folder, dataset, size, fold_list, file):
 
     for ind in fold_list:
         keyset_file = f'../keyset/{dataset}_keyset_{ind}.json'
-        pred_file = f'{pred_folder}/{dataset}_pred{ind}.json'
+        pred_file = find_pred_file(pred_folder, dataset, ind)
         with open(keyset_file, 'r') as f:
             keyset = json.load(f)
         with open(pred_file, 'r') as f:
@@ -97,13 +122,28 @@ def get_repeat_eval(pred_folder, dataset, size, fold_list, file):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--pred_folder', type=str, required=True, help='x')
-    parser.add_argument('--fold_list', type=list, required=True, help='x')
+    parser.add_argument('--fold_list', type=str, required=True, help='x')
     args = parser.parse_args()
     pred_folder = args.pred_folder
-    fold_list = args.fold_list
-    eval_file = 'eval_results.txt'
+    # Parse the fold_list string to actual list
+    fold_list = eval(args.fold_list)
+    method_name = os.path.basename(pred_folder)
+    eval_file = f'eval_{method_name}_results.txt'
     f = open(eval_file, 'w')
-    for dataset in ['dunnhumby', 'tafeng', 'instacart']:
+    # Get datasets from environment variable
+    dataset_names = os.getenv('DATASET_NAMES', 'tafeng,instacart').split(',')
+    dataset_names = [name.strip() for name in dataset_names]  # Remove any whitespace
+    
+    # Get basket sizes configuration
+    basket_sizes_config = os.getenv('BASKET_EVAL_SIZES', '10|20,10|20').split(',')
+    
+    for i, dataset in enumerate(dataset_names):
         f.write('############'+dataset+'########### \n')
-        get_repeat_eval(pred_folder, dataset, 10, fold_list, f)
-        get_repeat_eval(pred_folder, dataset, 20, fold_list, f)
+        # Get basket sizes for this dataset, default to 10,20 if not enough configs
+        if i < len(basket_sizes_config):
+            sizes = [int(s.strip()) for s in basket_sizes_config[i].split('|')]
+        else:
+            sizes = [10, 20]
+        
+        for size in sizes:
+            get_repeat_eval(pred_folder, dataset, size, fold_list, f)

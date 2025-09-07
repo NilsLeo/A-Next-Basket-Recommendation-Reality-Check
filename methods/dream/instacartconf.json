@@ -14,10 +14,10 @@
   "valid_metric_bigger": 1,
   "valid_metric": "recall20",
   "log_file": "logs/instacart/test.log",
-  "train_file": "../jsondata/instacart_history.json",
-  "tgt_file": "../jsondata/instacart_future.json",
-  "data_config_file": "../keyset/instacart_keyset_",
-  "item_candidate": "../datacand/instacart_item",
-  "user_candidate": "../datacand/instacart_user",
+  "train_file": "../../jsondata/instacart_history.json",
+  "tgt_file": "../../jsondata/instacart_future.json",
+  "data_config_file": "../../keyset/instacart_keyset_",
+  "item_candidate": "../../datacand/instacart_item",
+  "user_candidate": "../../datacand/instacart_user",
   "checkpoint_dir": "models/instacart/"
 }

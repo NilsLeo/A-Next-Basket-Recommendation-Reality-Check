@@ -3,6 +3,10 @@ import pandas as pd
 import json
 import argparse
 import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv('../.env')
 
 
 def get_exp_recall(pred_folder, dataname, k, ind):
@@ -60,9 +64,22 @@ if __name__ == '__main__':
     args = parser.parse_args()
     pred_folder = args.pred_folder
     fold_list = args.fold_list
-    for name in ['tafeng', 'dunnhumby', 'instacart']:
+    # Get datasets from environment variable
+    dataset_names = os.getenv('DATASET_NAMES', 'tafeng,dunnhumby,instacart').split(',')
+    dataset_names = [name.strip() for name in dataset_names]  # Remove any whitespace
+    
+    # Get basket sizes configuration
+    basket_sizes_config = os.getenv('BASKET_EVAL_SIZES', '10|20,10|20').split(',')
+    
+    for i, name in enumerate(dataset_names):
         print(name)
-        for k in [10, 20]:
+        # Get basket sizes for this dataset, default to 10,20 if not enough configs
+        if i < len(basket_sizes_config):
+            sizes = [int(s.strip()) for s in basket_sizes_config[i].split('|')]
+        else:
+            sizes = [10, 20]
+        
+        for k in sizes:
             rep_recall = []
             expl_recall = []
             for ind in fold_list:
