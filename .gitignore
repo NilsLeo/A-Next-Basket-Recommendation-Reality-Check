@@ -40,3 +40,4 @@ methods/clea/module/config.py
 dream/*.json
 methods/tifuknn/*.json
 pipeline/logs/*
+methods/dnntsp/train/utils/config.json
