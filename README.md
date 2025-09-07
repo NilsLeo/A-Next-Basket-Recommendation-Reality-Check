@@ -1,4 +1,4 @@
-# Source Code and Appendix for "A Next Basket Recommendation Reality Check"
+# A Next Basket Recommendation Reality Check
 
 This Repository is a fork of [A-Next-Basket-Recommendation-Reality-Check](https://github.com/liming-7/A-Next-Basket-Recommendation-Reality-Check). Read the original [README](https://github.com/liming-7/A-Next-Basket-Recommendation-Reality-Check) as well as the [Original Paper](https://arxiv.org/abs/2109.14233) in order to understand the context of this repository.
 
