@@ -3,7 +3,7 @@ charset-normalizer==2.0.12
 cycler==0.11.0
 dataclasses==0.8
 decorator==4.4.2
-dgl==0.5.2
+dgl-cu111==0.6.1
 googledrivedownloader==0.4
 idna==3.10
 importlib-resources==5.4.0
@@ -32,9 +32,9 @@ seaborn==0.11.2
 six==1.17.0
 tensorboardX==2.6.2.2
 threadpoolctl==3.1.0
-torch==1.5.0+cu101
+torch==1.10.0+cu111
 torch-geometric==2.0.3
-torchvision==0.6.0+cu101
+torchvision==0.11.0+cu111
 tqdm==4.64.1
 typing_extensions==4.1.1
 urllib3==1.26.20
