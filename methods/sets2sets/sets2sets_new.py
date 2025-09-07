@@ -712,8 +712,8 @@ def main(argv):
             print('k = ' + str(i))
             for model_epoch in range(num_iter):
                 print('Epoch: ', model_epoch)
-                encoder_pathes = './models/encoder' + str(model_version) + '_model_epoch' + str(model_epoch)
-                decoder_pathes = './models/decoder' + str(model_version) + '_model_epoch' + str(model_epoch)
+                encoder_pathes = './models/encoder_' + str(model_version) + '_model_best'
+                decoder_pathes = './models/decoder_' + str(model_version) + '_model_best'
 
                 encoder_instance = torch.load(encoder_pathes, map_location=torch.device('cpu'))
                 decoder_instance = torch.load(decoder_pathes, map_location=torch.device('cpu'))

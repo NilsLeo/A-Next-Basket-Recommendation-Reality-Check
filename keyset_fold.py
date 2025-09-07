@@ -16,7 +16,10 @@ if __name__ == '__main__':
     data_history = pd.read_csv(f'dataset/{dataset}_history.csv')
     data = pd.concat([data_history, data_future])
 
-    user = list(set(data_future['user_id']))
+    # Only include users who appear in both history AND future data
+    history_users = set(data_history['user_id'])
+    future_users = set(data_future['user_id'])
+    user = list(history_users.intersection(future_users))
     user_num = len(user)
     random.shuffle(user)
     user = [str(user_id) for user_id in user]

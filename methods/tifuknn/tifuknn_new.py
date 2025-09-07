@@ -92,10 +92,15 @@ def KNN(query_set, target_set, k):
     test_mat = []
     for key in query_set.keys():
         test_mat.append(query_set[key])
-    # print('Finding k nearest neighbors...')
-    nbrs = NearestNeighbors(n_neighbors=k, algorithm='brute').fit(history_mat)
+    
+    # Dynamically adjust k based on available samples
+    n_samples = len(history_mat)
+    actual_k = min(k, n_samples)
+    
+    print(f'Requested neighbors: {k}, Available samples: {n_samples}, Using neighbors: {actual_k}')
+    
+    nbrs = NearestNeighbors(n_neighbors=actual_k, algorithm='brute').fit(history_mat)
     distances, indices = nbrs.kneighbors(test_mat)
-    # print('Finish KNN search.' )
     return indices, distances
 
 def vec2label_list(pred_vec):

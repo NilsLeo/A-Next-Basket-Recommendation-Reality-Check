@@ -72,7 +72,7 @@ if __name__ == '__main__':
                 # if item > item_num:
                 #     item_num = item
                 cf_user_list.append(uid_map_dict[user])
-                cf_item_list.append(item)
+                cf_item_list.append(item_map_dict[item])
 
         # compute recency part
         if len(history_seq)>recency:
@@ -83,8 +83,8 @@ if __name__ == '__main__':
         freq_dict = dict()
         for bask in recent_seq:
             for item_o in bask:
-                # item_f = item_map_dict[item_o]
-                item_f = item_o
+                item_f = item_map_dict[item_o]
+                # item_f = item_o
                 if item_f not in freq_dict.keys():
                     freq_dict[item_f] = 1
                 else:
@@ -97,7 +97,6 @@ if __name__ == '__main__':
             # cf_user_list.append(uid_map_dict[user])
             # cf_item_list.append(item)
 
-    item_num += 1
     # print(user_num)
     # print(item_num)
     rc_matrix = sparse.coo_matrix((rc_score_list, (rc_user_list, rc_item_list)), shape=(user_num, item_num))
@@ -138,11 +137,11 @@ if __name__ == '__main__':
         u_pred = user_reccomendation[uid_map_dict[uid]]
         # print(u_pred)
         pred_list = u_pred.argsort()[::-1][:100]
-        # pred_list_o = [rev_item_map_dict[item] for item in pred_list]
+        pred_list_o = [rev_item_map_dict[item] for item in pred_list]
         # o_pred_list = [rev_item_map_dict[item] for item in pred_list]
 
-        pred_dict[uid] = [int(i) for i in pred_list]
-        print(list(pred_list))
+        pred_dict[uid] = [int(i) for i in pred_list_o]
+        print(list(pred_list_o))
     with open(pred_path, 'w') as f:
         json.dump(pred_dict, f)
 

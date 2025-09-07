@@ -34,9 +34,10 @@ if __name__ == '__main__':
 
         checkpoint_file = []
         for path in para_path:
-            path_l = path.split('-')
-            if path_l[2] == str(fold_id) and path_l[4] == '1':
-                checkpoint_file.append(path)
+            if path.endswith('.pth'):
+                path_l = path.split('-')
+                if len(path_l) >= 5 and path_l[3] == str(fold_id) and path_l[4] == '1':
+                    checkpoint_file.append(path)
 
         checkpoint = torch.load(checkpoint_file[0], map_location=torch.device('cpu'))
         
