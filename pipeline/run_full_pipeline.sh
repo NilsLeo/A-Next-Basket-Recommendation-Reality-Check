@@ -23,9 +23,6 @@ mkdir -p logs
 echo "Step: Converting data formats... (~3-5 minutes)"
 ./csv_to_json.sh 2>&1 | tee logs/csv_to_json.log
 ./csv_to_mergedjson.sh 2>&1 | tee logs/csv_to_mergedjson.log
-
-# Step 4: Generate keysets AFTER JSON conversion (ensures consistency)
-echo "Step: Generating keysets from current data... (~5-10 minutes)"
 ./keyset.sh 2>&1 | tee logs/keyset.log
 
 # Step 5: Run all models (can be run in parallel)

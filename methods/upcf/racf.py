@@ -141,7 +141,7 @@ if __name__ == '__main__':
         # o_pred_list = [rev_item_map_dict[item] for item in pred_list]
 
         pred_dict[uid] = [int(i) for i in pred_list_o]
-        print(list(pred_list_o))
+        # print(list(pred_list_o))
     with open(pred_path, 'w') as f:
         json.dump(pred_dict, f)
 
