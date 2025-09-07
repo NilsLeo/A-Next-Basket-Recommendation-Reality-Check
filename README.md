@@ -20,7 +20,7 @@ definition for "clea/pred_result.py" file
 - Added bash script for Retrieving limited datasets, so that this repository
 works in conjunction with [NBR-Restrictor](https://github.com/NilsLeo/NBR-Restrictor)
 
-# Edit .env with actual dataset download URLs
+Edit .env with actual dataset download URLs
 
 ## Pipeline Automation
 ### Video Tutorial
@@ -51,7 +51,13 @@ user_id,order_number,product_id
 9,12,163
 ```
 
-In order tog generate these files you need to preprocess your dataset. Examples on how to do this for tafeng,instacart and dunnhumby are provided in the [preprocess](./preprocess) directory.
+
+
+In order to generate these files you need to preprocess your dataset. Examples on how to do this for tafeng,instacart and dunnhumby are provided in the [preprocess](./preprocess) directory.
+
+
+(Optional) If youre looking to sample a smaller version of the dataset, you can use the [NBR-Restrictor](https://github.com/NilsLeo/NBR-Restrictor) repository to generate the required files.
+
 
 ### Quick Start
 
