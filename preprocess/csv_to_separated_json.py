@@ -9,6 +9,7 @@ import pandas as pd
 import json
 from collections import defaultdict
 import os
+from dotenv import load_dotenv
 
 def csv_to_separated_json(dataset_name):
     """
@@ -76,7 +77,12 @@ def csv_to_separated_json(dataset_name):
     print(f"Conversion complete. Processed {len(history_user_baskets)} users for history, {len(future_user_baskets)} users for future")
 
 if __name__ == '__main__':
-    datasets = ['dunnhumby', 'instacart', 'tafeng']
+    # Load environment variables
+    load_dotenv('../.env')
+    
+    # Get datasets from environment variable
+    dataset_names = os.getenv('DATASET_NAMES', 'tafeng,instacart')
+    datasets = [name.strip() for name in dataset_names.split(',')]
     
     for dataset in datasets:
         print(f"\n=== Processing {dataset} ===")
