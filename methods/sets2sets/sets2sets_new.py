@@ -10,9 +10,25 @@ import torch.nn as nn
 from torch.autograd import Variable
 from torch import optim
 import torch.nn.functional as F
+# Mixed precision training compatibility for older PyTorch versions
+try:
+    from torch.cuda.amp import autocast, GradScaler
+    HAS_AMP = True
+except ImportError:
+    # Fallback for PyTorch < 1.6.0
+    try:
+        from contextlib import nullcontext as autocast
+    except ImportError:
+        # For Python < 3.7, create a simple context manager
+        from contextlib import contextmanager
+        @contextmanager
+        def autocast():
+            yield
+    GradScaler = None
+    HAS_AMP = False
 
-num_iter = 20 #epoch number
-hidden_size = 32
+num_iter = 12 #epoch number
+hidden_size = 24
 num_layers = 1
 
 # only one can be set 1
@@ -26,8 +42,8 @@ use_average_embedding = 1
 labmda = 10
 
 MAX_LENGTH = 100
-learning_rate = 0.001
-print_val = 3000
+learning_rate = 0.01
+print_val = 1000
 use_cuda = torch.cuda.is_available()
 
 
@@ -237,7 +253,7 @@ class custom_MultiLabelLoss_torch(nn.modules.loss._Loss):
         return loss
 
 def train(input_variable, target_variable, encoder, decoder, codes_inverse_freq, encoder_optimizer, decoder_optimizer,
-          criterion, output_size, max_length=MAX_LENGTH):
+          criterion, output_size, max_length=MAX_LENGTH, scaler=None):
     encoder_hidden = encoder.initHidden()
 
     encoder_optimizer.zero_grad()
@@ -268,26 +284,52 @@ def train(input_variable, target_variable, encoder, decoder, codes_inverse_freq,
     last_hidden = encoder_hidden
     decoder_input = last_input
 
-    decoder_output, decoder_hidden, decoder_attention = decoder(
-        decoder_input, decoder_hidden, encoder_outputs, history_record, last_hidden)
+    # Mixed precision forward pass
+    if scaler and use_cuda:
+        with autocast():
+            decoder_output, decoder_hidden, decoder_attention = decoder(
+                decoder_input, decoder_hidden, encoder_outputs, history_record, last_hidden)
 
-    #create target tensor.
-    vectorized_target = np.zeros(output_size)
-    for idx in target_variable[1]:
-        vectorized_target[idx] = 1
-    target = Variable(torch.FloatTensor(vectorized_target).reshape(1, -1))
+            #create target tensor.
+            vectorized_target = np.zeros(output_size)
+            for idx in target_variable[1]:
+                vectorized_target[idx] = 1
+            target = Variable(torch.FloatTensor(vectorized_target).reshape(1, -1))
 
-    if use_cuda:
-        target = target.cuda()
-    weights = Variable(torch.FloatTensor(codes_inverse_freq).reshape(1, -1))
-    if use_cuda:
-        weights = weights.cuda()
+            if use_cuda:
+                target = target.cuda()
+            weights = Variable(torch.FloatTensor(codes_inverse_freq).reshape(1, -1))
+            if use_cuda:
+                weights = weights.cuda()
 
-    loss = criterion(decoder_output, target, weights)
-    loss.backward()
+            loss = criterion(decoder_output, target, weights)
+        
+        # Mixed precision backward pass
+        scaler.scale(loss).backward()
+        scaler.step(encoder_optimizer)
+        scaler.step(decoder_optimizer)
+        scaler.update()
+    else:
+        decoder_output, decoder_hidden, decoder_attention = decoder(
+            decoder_input, decoder_hidden, encoder_outputs, history_record, last_hidden)
 
-    encoder_optimizer.step()
-    decoder_optimizer.step()
+        #create target tensor.
+        vectorized_target = np.zeros(output_size)
+        for idx in target_variable[1]:
+            vectorized_target[idx] = 1
+        target = Variable(torch.FloatTensor(vectorized_target).reshape(1, -1))
+
+        if use_cuda:
+            target = target.cuda()
+        weights = Variable(torch.FloatTensor(codes_inverse_freq).reshape(1, -1))
+        if use_cuda:
+            weights = weights.cuda()
+
+        loss = criterion(decoder_output, target, weights)
+        loss.backward()
+
+        encoder_optimizer.step()
+        decoder_optimizer.step()
 
     return loss.item()
 
@@ -321,6 +363,13 @@ def trainIters(data_history, data_future, output_size, encoder, decoder, model_n
                                          weight_decay=0)
     decoder_optimizer = torch.optim.Adam(decoder.parameters(), lr=learning_rate, betas=(0.9, 0.98), eps=1e-11,
                                          weight_decay=0)
+    
+    # Mixed precision training
+    scaler = GradScaler() if (use_cuda and HAS_AMP) else None
+    
+    # Learning rate scheduler for faster convergence
+    encoder_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(encoder_optimizer, mode='min', factor=0.8, patience=1)
+    decoder_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(decoder_optimizer, mode='min', factor=0.8, patience=1)
 
 
     total_iter = 0
@@ -340,7 +389,7 @@ def trainIters(data_history, data_future, output_size, encoder, decoder, model_n
             target_variable = data_future[training_keys[iter]]
 
             loss = train(input_variable, target_variable, encoder,
-                         decoder, codes_inverse_freq, encoder_optimizer, decoder_optimizer, criterion, output_size)
+                         decoder, codes_inverse_freq, encoder_optimizer, decoder_optimizer, criterion, output_size, scaler=scaler)
 
             print_loss_total += loss
             total_iter += 1
@@ -715,8 +764,14 @@ def main(argv):
                 encoder_pathes = './models/encoder_' + str(model_version) + '_model_best'
                 decoder_pathes = './models/decoder_' + str(model_version) + '_model_best'
 
-                encoder_instance = torch.load(encoder_pathes, map_location=torch.device('cpu'))
-                decoder_instance = torch.load(decoder_pathes, map_location=torch.device('cpu'))
+                if use_cuda:
+                    encoder_instance = torch.load(encoder_pathes)
+                    decoder_instance = torch.load(decoder_pathes)
+                    encoder_instance = encoder_instance.cuda()
+                    decoder_instance = decoder_instance.cuda()
+                else:
+                    encoder_instance = torch.load(encoder_pathes, map_location=torch.device('cpu'))
+                    decoder_instance = torch.load(decoder_pathes, map_location=torch.device('cpu'))
 
                 recall, ndcg, hr = evaluate(history_data, future_data, encoder_instance, decoder_instance, input_size,
                                             val_key_set, next_k_step, i)
