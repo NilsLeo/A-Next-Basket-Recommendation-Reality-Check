@@ -41,3 +41,4 @@ dream/*.json
 methods/tifuknn/*.json
 pipeline/logs/*
 methods/dnntsp/train/utils/config.json
+methods/dnntsp/train/utils/config.json
