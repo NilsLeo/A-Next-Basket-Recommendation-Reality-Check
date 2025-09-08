@@ -42,25 +42,41 @@ else
     exit 1
 fi
 
-FOLD_ID=${FOLD_ID:-0}
-
-# Iterate over each dataset
+# Iterate over each dataset and fold
 for dataset in $DATASETS; do
-    echo "========================================="
-    echo "Processing dataset: $dataset"
-    echo "========================================="
-    
-    echo "Generating config for dataset: $dataset, fold: $FOLD_ID"
-    python ../generate_config.py "$dataset" "$FOLD_ID"
-    
-    echo "Training DNNTSP for dataset: $dataset..."
-    python train_main.py
-    
-    echo "DNNTSP training completed for dataset: $dataset"
-    echo "Saved model for dataset: $dataset"
-    echo ""
+    for fold in 0 1 2; do
+        echo "========================================="
+        echo "Processing dataset: $dataset, fold: $fold"
+        echo "========================================="
+        
+        echo "Generating config for dataset: $dataset, fold: $fold"
+        python ../generate_config.py "$dataset" "$fold"
+        
+        echo "Training DNNTSP for dataset: $dataset, fold: $fold..."
+        python train_main.py
+        
+        echo "DNNTSP training completed for dataset: $dataset, fold: $fold"
+        
+        # Find the best model for this dataset and fold
+        model_folder="../save_model_folder/${dataset}/DNNTSP"
+        if [ -d "$model_folder" ]; then
+            # Find the latest/best model file
+            best_model=$(ls -t "$model_folder"/model_epoch_*.pkl 2>/dev/null | head -1)
+            if [ -n "$best_model" ]; then
+                echo "Running predictions for dataset: $dataset, fold: $fold"
+                cd ..
+                python pred_results.py --dataset "$dataset" --fold_id "$fold" --best_model_path "$best_model"
+                cd train
+                echo "Predictions completed for dataset: $dataset, fold: $fold"
+            else
+                echo "Warning: No model file found in $model_folder"
+            fi
+        else
+            echo "Warning: Model folder not found: $model_folder"
+        fi
+        echo ""
+    done
 done
 
 echo "========================================="
-echo "All datasets processed. Check saved models and run predictions manually."
-echo "Use: python pred_results.py --dataset <dataset> --fold_id <fold> --best_mode_path <model_path>"
+echo "All datasets processed. Training and predictions completed."

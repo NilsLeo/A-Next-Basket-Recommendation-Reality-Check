@@ -41,8 +41,10 @@ print(df['user_id'].nunique())
 ")
     num_products=$(python -c "
 import pandas as pd
-df = pd.read_csv('../../dataset/${dataset}_history.csv')
-print(df['product_id'].max() + 1)
+df_history = pd.read_csv('../../dataset/${dataset}_history.csv')
+df_future = pd.read_csv('../../dataset/${dataset}_future.csv')
+df_combined = pd.concat([df_history, df_future])
+print(df_combined['product_id'].max() + 1)
 ")
     
     # Create dataset-specific model directory

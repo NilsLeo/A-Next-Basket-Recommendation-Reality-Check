@@ -7,18 +7,21 @@ cd ../methods/sets2sets
 echo "Setting up Sets2Sets environment..."
 
 # Create virtual environment if it doesn't exist
-if ! conda env list | grep -q venv-sets2sets; then
+if ! ~/miniconda3/bin/conda env list | grep -q venv-sets2sets; then
     echo "Creating virtual environment for Sets2Sets..."
-    conda create --name venv-sets2sets python=3.6.8 -y
+    ~/miniconda3/bin/conda create --name venv-sets2sets python=3.6.8 -y
 fi
 
 # Activate virtual environment and install dependencies
 echo "Activating virtual environment and installing dependencies..."
-source $(conda info --base)/etc/profile.d/conda.sh
+source ~/miniconda3/etc/profile.d/conda.sh
 conda activate venv-sets2sets
 
 if [ -f "requirements.txt" ]; then
-    pip install -r requirements.txt
+    # Install non-PyTorch dependencies first
+    pip install certifi==2021.5.30 numpy==1.19.5 Pillow==8.4.0 six==1.17.0 tqdm==4.19.9
+    # Install PyTorch with CUDA support
+    pip install torch==2.1.0 torchvision==0.16.0 --index-url https://download.pytorch.org/whl/cu121
 fi
 
 echo "Running Sets2Sets method..."
