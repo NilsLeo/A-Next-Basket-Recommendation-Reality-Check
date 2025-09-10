@@ -3,7 +3,7 @@ charset-normalizer==2.0.12
 cycler==0.11.0
 dataclasses==0.8
 decorator==4.4.2
-dgl-cu111==0.6.1
+dgl==0.5.2
 googledrivedownloader==0.4
 idna==3.10
 importlib-resources==5.4.0
