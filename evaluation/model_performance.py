@@ -3,9 +3,28 @@ import pandas as pd
 import json
 import argparse
 import os
-from dotenv import load_dotenv
+try:
+    from dotenv import load_dotenv  # type: ignore
+except Exception:
+    # Fallback loader when python-dotenv is unavailable
+    def load_dotenv(path: str):
+        try:
+            import os as _os
+            if not _os.path.exists(path):
+                return
+            with open(path, 'r') as f:
+                for line in f:
+                    line = line.strip()
+                    if not line or line.startswith('#'):
+                        continue
+                    if '=' in line:
+                        k, v = line.split('=', 1)
+                        _os.environ.setdefault(k.strip(), v.strip())
+        except Exception:
+            # Silently ignore if we cannot parse .env
+            pass
 
-# Load environment variables
+# Load environment variables (via dotenv or fallback)
 load_dotenv('../.env')
 
 def find_pred_file(pred_folder, dataset, fold):
@@ -134,14 +153,18 @@ if __name__ == '__main__':
     dataset_names = os.getenv('DATASET_NAMES', 'tafeng,instacart').split(',')
     dataset_names = [name.strip() for name in dataset_names]  # Remove any whitespace
     
-    # Get basket sizes configuration
-    basket_sizes_config = os.getenv('BASKET_EVAL_SIZES', '10|20,10|20').split(',')
+    # Get basket sizes configuration; be robust to surrounding quotes
+    raw_sizes = os.getenv('BASKET_EVAL_SIZES', '10|20,10|20')
+    if isinstance(raw_sizes, str):
+        raw_sizes = raw_sizes.strip().strip('"').strip("'")
+    parts = [p.strip().strip('"').strip("'") for p in str(raw_sizes).split(',')]
+    basket_sizes_config = parts
     
     for i, dataset in enumerate(dataset_names):
         f.write('############'+dataset+'########### \n')
         # Get basket sizes for this dataset, default to 10,20 if not enough configs
         if i < len(basket_sizes_config):
-            sizes = [int(s.strip()) for s in basket_sizes_config[i].split('|')]
+            sizes = [int(s.strip().strip('"').strip("'")) for s in basket_sizes_config[i].split('|')]
         else:
             sizes = [10, 20]
         
