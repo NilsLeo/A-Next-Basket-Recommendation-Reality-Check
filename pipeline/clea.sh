@@ -59,7 +59,8 @@ print(df_combined['product_id'].max() + 1)
         
         echo "Predicting with CLEA for $dataset fold $foldk"
         if [ -f "pred_results.py" ]; then
-            python pred_results.py --dataset $dataset --foldk $foldk --num_users $num_users --num_product $num_products --log_fire cleamodel --alternative_train_epoch 10 --alternative_train_epoch_D 10 --pretrain_epoch 2 --before_epoch 2 --epoch 30 --temp_learn 0 --temp 10 --embedding_dim 64
+            # Only run prediction using the saved checkpoints
+            python pred_results.py --dataset $dataset --foldk $foldk
         else
             echo "Warning: pred_results.py not found, skipping prediction step"
         fi
