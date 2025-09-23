@@ -24,7 +24,7 @@ Edit .env with actual dataset download URLs
 
 ## Pipeline Automation
 ### Video Tutorial
-[![Pipeline Automation Video Tutorial](https://img.youtube.com/vi/1mJ2Yk1b7j8/0.jpg)]()
+[Pipeline Automation Video Tutorial](./Tutorial.mp4)
 
 
 ### Required Files
